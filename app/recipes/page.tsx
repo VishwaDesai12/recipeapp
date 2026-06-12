@@ -1,14 +1,7 @@
-import { Recipe } from "@/types/recipe";
+import { getAllRecipes } from "@/lib/data";
 import { RecipesBrowseClient } from "./RecipesBrowseClient";
 
-async function getPublishedRecipes(): Promise<Recipe[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/recipes?published=true`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function RecipesPage() {
-  const recipes = await getPublishedRecipes();
+  const recipes = getAllRecipes().filter((r) => r.published);
   return <RecipesBrowseClient initialRecipes={recipes} />;
 }

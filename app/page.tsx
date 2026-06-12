@@ -2,22 +2,16 @@ import Link from "next/link";
 import { ArrowRight, Clock, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/LinkButton";
+import { getAllRecipes } from "@/lib/data";
 import { Recipe } from "@/types/recipe";
 import { HomeLoginBanner } from "./HomeLoginBanner";
-
-async function getPublishedRecipes(): Promise<Recipe[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/recipes?published=true`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
-}
 
 export default async function HomePage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const recipes = await getPublishedRecipes();
+  const recipes = getAllRecipes().filter((r) => r.published);
   const { error } = await searchParams;
   const featured = recipes.slice(0, 3);
   const recent = recipes.slice(3, 9);
