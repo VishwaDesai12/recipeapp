@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChefHat, LogIn, Moon, Search, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from "@/store";
 import { useCooking } from "@/context/CookingContext";
@@ -52,12 +52,13 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" asChild>
-            <Link href="/login" className="flex items-center gap-1.5">
-              <LogIn className="w-3.5 h-3.5" />
-              Login
-            </Link>
-          </Button>
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "flex items-center gap-1.5")}
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Login
+          </Link>
           <Button size="icon" variant="ghost" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </Button>
