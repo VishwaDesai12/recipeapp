@@ -26,6 +26,7 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
+      localStorage.setItem("chef_logged_in", "true");
       window.location.href = "/manage";
     } else {
       const data = await res.json();
