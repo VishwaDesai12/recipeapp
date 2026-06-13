@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { setRecipes, deleteRecipe, setSelectedRecipe } from "@/store/recipeSlice";
+import { setRecipes, removeRecipe, setSelectedRecipe } from "@/store/recipeSlice";
 import { Recipe } from "@/types/recipe";
 
 const STORAGE_KEY = "manage_recipes";
@@ -51,9 +51,9 @@ export function ManageDashboardClient({ initialRecipes }: Props) {
     router.push(`/manage/${recipe.id}/edit`);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm("Delete this recipe? This cannot be undone.")) return;
-    await dispatch(deleteRecipe(id));
+    dispatch(removeRecipe(id));
   };
 
   if (recipes.length === 0) {

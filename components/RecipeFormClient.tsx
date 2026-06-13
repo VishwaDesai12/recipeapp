@@ -18,7 +18,7 @@ import { IngredientRow } from "@/components/IngredientRow";
 import { StepCard } from "@/components/StepCard";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useAppDispatch } from "@/store";
-import { createRecipe, editRecipe } from "@/store/recipeSlice";
+import { addRecipe, updateRecipe } from "@/store/recipeSlice";
 import { DietaryTag, Difficulty, Recipe } from "@/types/recipe";
 
 const DIETARY_TAGS: DietaryTag[] = [
@@ -64,18 +64,37 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
     .trim()
     .replace(/\s+/g, "-");
 
-  const onSubmit = async (formValues: typeof values) => {
+  const onSubmit = (formValues: typeof values) => {
     setSubmitting(true);
-    try {
-      if (mode === "create") {
-        await dispatch(createRecipe(formValues));
-      } else if (initialRecipe) {
-        await dispatch(editRecipe({ id: initialRecipe.id, data: formValues }));
-      }
-      router.push("/manage");
-    } finally {
-      setSubmitting(false);
+    const now = new Date().toISOString();
+
+    if (mode === "create") {
+      const id = crypto.randomUUID();
+      const slug = derivedSlug || id;
+      dispatch(addRecipe({
+        ...formValues,
+        id,
+        slug,
+        rating: 0,
+        ratingCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      }));
+    } else if (initialRecipe) {
+      const newSlug =
+        formValues.title !== initialRecipe.title
+          ? (derivedSlug || initialRecipe.slug)
+          : initialRecipe.slug;
+      dispatch(updateRecipe({
+        ...initialRecipe,
+        ...formValues,
+        slug: newSlug,
+        updatedAt: now,
+      }));
     }
+
+    router.push("/manage");
+    setSubmitting(false);
   };
 
   const toggleDietaryTag = (tag: DietaryTag) => {
