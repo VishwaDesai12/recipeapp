@@ -20,7 +20,23 @@ export function RecipeDetailClient({ recipe }: Props) {
   const dispatch = useAppDispatch();
   const { servingMultiplier, setServingMultiplier } = useCooking();
   const [activeTimerStep, setActiveTimerStep] = useState<number | null>(null);
-  const [userRating, setUserRating] = useState<number | null>(null);
+  const RATINGS_KEY = "recipe_user_ratings";
+
+  const getSavedUserRating = (): number | null => {
+    try {
+      const stored = localStorage.getItem(RATINGS_KEY);
+      if (stored) {
+        const map: Record<string, number> = JSON.parse(stored);
+        return map[recipe.id] ?? null;
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
+  const [userRating, setUserRating] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    return getSavedUserRating();
+  });
   const [currentRating, setCurrentRating] = useState(recipe.rating);
   const [ratingCount, setRatingCount] = useState(recipe.ratingCount);
 
@@ -29,30 +45,46 @@ export function RecipeDetailClient({ recipe }: Props) {
   };
 
   const handleRate = (star: number) => {
+    const prevUserRating = getSavedUserRating();
+    const alreadyRated = prevUserRating !== null;
+
+    // If user already rated: replace their old vote (count stays same)
+    // If new rating: add to running average (count +1)
+    let newRating: number;
+    let newCount: number;
+    if (alreadyRated) {
+      newCount = ratingCount;
+      newRating = Math.round(((currentRating * ratingCount - prevUserRating! + star) / ratingCount) * 10) / 10;
+    } else {
+      newCount = ratingCount + 1;
+      newRating = Math.round(((currentRating * ratingCount + star) / newCount) * 10) / 10;
+    }
+
     setUserRating(star);
-    // Compute running average client-side
-    const newCount = ratingCount + 1;
-    const newRating = Math.round(((currentRating * ratingCount + star) / newCount) * 10) / 10;
     setCurrentRating(newRating);
     setRatingCount(newCount);
 
-    // Persist to localStorage and Redux
+    // Save user's rating for this recipe
+    try {
+      const stored = localStorage.getItem(RATINGS_KEY);
+      const map: Record<string, number> = stored ? JSON.parse(stored) : {};
+      map[recipe.id] = star;
+      localStorage.setItem(RATINGS_KEY, JSON.stringify(map));
+    } catch { /* ignore */ }
+
+    // Persist updated recipe rating to manage_recipes localStorage + Redux
     try {
       const stored = localStorage.getItem("manage_recipes");
       if (stored) {
         const recipes: Recipe[] = JSON.parse(stored);
         const updated = recipes.map((r) =>
-          r.id === recipe.id
-            ? { ...r, rating: newRating, ratingCount: newCount }
-            : r
+          r.id === recipe.id ? { ...r, rating: newRating, ratingCount: newCount } : r
         );
         localStorage.setItem("manage_recipes", JSON.stringify(updated));
         const updatedRecipe = updated.find((r) => r.id === recipe.id);
         if (updatedRecipe) dispatch(updateRecipe(updatedRecipe));
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const handleServingChange = (delta: number) => {
