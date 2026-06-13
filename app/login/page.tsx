@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChefHat } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +26,7 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/manage");
+      window.location.href = "/manage";
     } else {
       const data = await res.json();
       setError(data.error || "Something went wrong");
