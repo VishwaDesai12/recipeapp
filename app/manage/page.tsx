@@ -1,17 +1,10 @@
 import { PlusCircle } from "lucide-react";
 import { LinkButton } from "@/components/LinkButton";
-import { Recipe } from "@/types/recipe";
+import { getAllRecipes } from "@/lib/data";
 import { ManageDashboardClient } from "./ManageDashboardClient";
 
-async function getAllRecipes(): Promise<Recipe[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/recipes`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
-}
-
-export default async function ManagePage() {
-  const recipes = await getAllRecipes();
+export default function ManagePage() {
+  const recipes = getAllRecipes();
 
   return (
     <div>
