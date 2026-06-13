@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
-  const cookieStore = await cookies();
-  cookieStore.delete("chef_token");
-  return NextResponse.redirect(new URL("/", req.url));
+  const response = NextResponse.redirect(new URL("/", req.url));
+  response.cookies.set("chef_token", "", {
+    path: "/",
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,
+  });
+  return response;
 }

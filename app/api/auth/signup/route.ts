@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { findUserByEmail, addUser } from "@/lib/users";
 
 export async function POST(req: NextRequest) {
@@ -15,13 +14,13 @@ export async function POST(req: NextRequest) {
 
   addUser(name, email, password);
 
-  const cookieStore = await cookies();
-  cookieStore.set("chef_token", email, {
+  const response = NextResponse.json({ success: true });
+  response.cookies.set("chef_token", email, {
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
     sameSite: "lax",
+    secure: true,
   });
-
-  return NextResponse.json({ success: true });
+  return response;
 }
