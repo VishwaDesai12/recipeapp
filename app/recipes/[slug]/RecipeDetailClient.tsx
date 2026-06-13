@@ -56,8 +56,9 @@ export function RecipeDetailClient({ recipe }: Props) {
   };
 
   const handleServingChange = (delta: number) => {
-    const next = Math.max(0.5, Math.round((servingMultiplier + delta) * 2) / 2);
-    setServingMultiplier(next);
+    const current = Math.round(recipe.servings * servingMultiplier);
+    const next = Math.max(1, current + delta);
+    setServingMultiplier(next / recipe.servings);
   };
 
   return (
@@ -70,8 +71,8 @@ export function RecipeDetailClient({ recipe }: Props) {
             size="icon"
             variant="outline"
             className="h-8 w-8"
-            onClick={() => handleServingChange(-0.5)}
-            disabled={servingMultiplier <= 0.5}
+            onClick={() => handleServingChange(-1)}
+            disabled={Math.round(recipe.servings * servingMultiplier) <= 1}
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -82,7 +83,7 @@ export function RecipeDetailClient({ recipe }: Props) {
             size="icon"
             variant="outline"
             className="h-8 w-8"
-            onClick={() => handleServingChange(0.5)}
+            onClick={() => handleServingChange(1)}
           >
             <Plus className="w-4 h-4" />
           </Button>
