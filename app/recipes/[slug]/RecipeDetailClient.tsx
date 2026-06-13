@@ -9,7 +9,7 @@ import { NutritionPanel } from "@/components/NutritionPanel";
 import { StarRating } from "@/components/StarRating";
 import { useCooking } from "@/context/CookingContext";
 import { useAppDispatch } from "@/store";
-import { rateRecipe } from "@/store/recipeSlice";
+import { updateRecipe } from "@/store/recipeSlice";
 import { Recipe } from "@/types/recipe";
 
 interface Props {
@@ -28,12 +28,30 @@ export function RecipeDetailClient({ recipe }: Props) {
     setActiveTimerStep(index);
   };
 
-  const handleRate = async (star: number) => {
+  const handleRate = (star: number) => {
     setUserRating(star);
-    const result = await dispatch(rateRecipe({ id: recipe.id, rating: star }));
-    if (rateRecipe.fulfilled.match(result)) {
-      setCurrentRating(result.payload.rating);
-      setRatingCount(result.payload.ratingCount);
+    // Compute running average client-side
+    const newCount = ratingCount + 1;
+    const newRating = Math.round(((currentRating * ratingCount + star) / newCount) * 10) / 10;
+    setCurrentRating(newRating);
+    setRatingCount(newCount);
+
+    // Persist to localStorage and Redux
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const recipes: Recipe[] = JSON.parse(stored);
+        const updated = recipes.map((r) =>
+          r.id === recipe.id
+            ? { ...r, rating: newRating, ratingCount: newCount }
+            : r
+        );
+        localStorage.setItem("manage_recipes", JSON.stringify(updated));
+        const updatedRecipe = updated.find((r) => r.id === recipe.id);
+        if (updatedRecipe) dispatch(updateRecipe(updatedRecipe));
+      }
+    } catch {
+      // ignore
     }
   };
 
