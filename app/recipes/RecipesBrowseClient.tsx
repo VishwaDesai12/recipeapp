@@ -17,7 +17,20 @@ export function RecipesBrowseClient({ initialRecipes }: Props) {
   const { filteredRecipes, count } = useFilteredRecipes();
 
   useEffect(() => {
+    // Merge server recipes first
     dispatch(mergeRecipes(initialRecipes));
+
+    // Also merge any user-created recipes stored in localStorage
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const parsed: Recipe[] = JSON.parse(stored);
+        if (parsed.length > 0) dispatch(mergeRecipes(parsed));
+      }
+    } catch {
+      // ignore malformed data
+    }
+
     // Only show published on this page
     dispatch(setFilters({ published: true }));
   }, [dispatch, initialRecipes]);

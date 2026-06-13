@@ -31,14 +31,36 @@ export default function CookbookPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Fetch recipes if not already loaded
+    // Fetch server recipes if not already loaded
     if (allRecipes.length === 0) {
       fetch("/api/recipes?published=true")
         .then((r) => r.json())
         .then((data) => dispatch(mergeRecipes(data)))
         .catch(() => null);
     }
+
+    // Always merge user-created recipes from localStorage
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0) dispatch(mergeRecipes(parsed));
+      }
+    } catch {
+      // ignore malformed data
+    }
   }, [dispatch, allRecipes.length]);
+
+  // Once recipes are loaded, prune any saved IDs with no matching recipe.
+  // This keeps the navbar badge count accurate.
+  useEffect(() => {
+    if (allRecipes.length === 0 || savedIds.length === 0) return;
+    const validIds = savedIds.filter((id) => allRecipes.some((r) => r.id === id));
+    if (validIds.length !== savedIds.length) {
+      dispatch(setSavedIds(validIds));
+      localStorage.setItem("cookbook_saved_ids", JSON.stringify(validIds));
+    }
+  }, [allRecipes, savedIds, dispatch]);
 
   // Persist savedIds changes to localStorage
   useEffect(() => {

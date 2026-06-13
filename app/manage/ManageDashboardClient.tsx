@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { setRecipes, deleteRecipe, setSelectedRecipe } from "@/store/recipeSlice";
 import { Recipe } from "@/types/recipe";
 
+const STORAGE_KEY = "manage_recipes";
+
 interface Props {
   initialRecipes: Recipe[];
 }
@@ -16,14 +18,33 @@ export function ManageDashboardClient({ initialRecipes }: Props) {
   const router = useRouter();
   const recipes = useAppSelector((s) => s.recipes.recipes);
 
+  // On mount: only restore from localStorage when Redux is empty (hard refresh / cold load).
+  // If Redux already has data (soft navigation), skip — preserves session-created recipes.
   useEffect(() => {
-    // Only seed from server when Redux is empty (fresh load / hard refresh).
-    // If Redux already has recipes the user created this session, keep them.
-    if (recipes.length === 0) {
-      dispatch(setRecipes(initialRecipes));
+    if (recipes.length > 0) return;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed: Recipe[] = JSON.parse(stored);
+        if (parsed.length > 0) {
+          dispatch(setRecipes(parsed));
+          return;
+        }
+      } catch {
+        // ignore malformed data
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    dispatch(setRecipes(initialRecipes));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialRecipes));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep localStorage in sync whenever recipes change
+  useEffect(() => {
+    if (recipes.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+    }
+  }, [recipes]);
 
   const handleEdit = (recipe: Recipe) => {
     dispatch(setSelectedRecipe(recipe));
