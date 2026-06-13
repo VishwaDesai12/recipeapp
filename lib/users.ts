@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 export interface User {
   id: string;
   name: string;
-  email: string;
+  email: string; 
   password: string;
 }
 
@@ -31,3 +31,4 @@ export function addUser(name: string, email: string, password: string): User {
   users.push(user);
   return user;
 }
+

@@ -6,53 +6,52 @@ import { LinkButton } from "@/components/LinkButton";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setSavedIds } from "@/store/cookbookSlice";
-import { mergeRecipes } from "@/store/recipeSlice";
+import { setRecipes } from "@/store/recipeSlice";
+import { Recipe } from "@/types/recipe";
+
+const SEEDED_IDS = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 
 export default function CookbookPage() {
   const dispatch = useAppDispatch();
   const savedIds = useAppSelector((s) => s.cookbook.savedIds);
   const allRecipes = useAppSelector((s) => s.recipes.recipes);
 
+  // Load recipes from localStorage (user-created only)
   useEffect(() => {
-    // Only restore from localStorage when Redux is empty (fresh session/reload).
-    // If Redux already has IDs the user saved this session, don't overwrite them.
-    if (savedIds.length === 0) {
-      const stored = localStorage.getItem("cookbook_saved_ids");
-      if (stored) {
-        try {
-          const ids = JSON.parse(stored) as string[];
-          if (ids.length > 0) dispatch(setSavedIds(ids));
-        } catch {
-          // ignore malformed data
+    if (allRecipes.length === 0) {
+      try {
+        const stored = localStorage.getItem("manage_recipes");
+        if (stored) {
+          const parsed: Recipe[] = JSON.parse(stored);
+          const userOnly = parsed.filter((r) => !SEEDED_IDS.has(r.id));
+          dispatch(setRecipes(userOnly));
         }
+      } catch {
+        // ignore
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
+  }, []);
 
+  // Restore saved IDs from localStorage
   useEffect(() => {
-    // Fetch server recipes if not already loaded
-    if (allRecipes.length === 0) {
-      fetch("/api/recipes?published=true")
-        .then((r) => r.json())
-        .then((data) => dispatch(mergeRecipes(data)))
-        .catch(() => null);
-    }
-
-    // Always merge user-created recipes from localStorage
-    try {
-      const stored = localStorage.getItem("manage_recipes");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.length > 0) dispatch(mergeRecipes(parsed));
+    if (savedIds.length === 0) {
+      try {
+        const stored = localStorage.getItem("cookbook_saved_ids");
+        if (stored) {
+          const ids = JSON.parse(stored) as string[];
+          // Strip saved IDs for old seeded recipes
+          const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
+          if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore malformed data
     }
-  }, [dispatch, allRecipes.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Once recipes are loaded, prune any saved IDs with no matching recipe.
-  // This keeps the navbar badge count accurate.
+  // Prune stale saved IDs once recipes are loaded
   useEffect(() => {
     if (allRecipes.length === 0 || savedIds.length === 0) return;
     const validIds = savedIds.filter((id) => allRecipes.some((r) => r.id === id));
@@ -62,7 +61,7 @@ export default function CookbookPage() {
     }
   }, [allRecipes, savedIds, dispatch]);
 
-  // Persist savedIds changes to localStorage
+  // Persist savedIds to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("cookbook_saved_ids", JSON.stringify(savedIds));
   }, [savedIds]);

@@ -2,38 +2,39 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/store";
-import { mergeRecipes, setFilters } from "@/store/recipeSlice";
+import { setRecipes, setFilters } from "@/store/recipeSlice";
 import { RecipeCard } from "@/components/RecipeCard";
 import { RecipeFiltersBar } from "@/components/RecipeFiltersBar";
 import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
 import { Recipe } from "@/types/recipe";
 
-interface Props {
-  initialRecipes: Recipe[];
-}
+// Old seeded recipe IDs — strip them out when migrating existing localStorage data
+const SEEDED_IDS = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 
-export function RecipesBrowseClient({ initialRecipes }: Props) {
+export function RecipesBrowseClient() {
   const dispatch = useAppDispatch();
   const { filteredRecipes, count } = useFilteredRecipes();
 
   useEffect(() => {
-    // Merge server recipes first
-    dispatch(mergeRecipes(initialRecipes));
-
-    // Also merge any user-created recipes stored in localStorage
     try {
       const stored = localStorage.getItem("manage_recipes");
       if (stored) {
         const parsed: Recipe[] = JSON.parse(stored);
-        if (parsed.length > 0) dispatch(mergeRecipes(parsed));
+        const userOnly = parsed.filter((r) => !SEEDED_IDS.has(r.id));
+        // If migration removed seeded recipes, persist the cleaned list back
+        if (userOnly.length !== parsed.length) {
+          localStorage.setItem("manage_recipes", JSON.stringify(userOnly));
+        }
+        dispatch(setRecipes(userOnly));
+      } else {
+        dispatch(setRecipes([]));
       }
     } catch {
-      // ignore malformed data
+      dispatch(setRecipes([]));
     }
-
-    // Only show published on this page
     dispatch(setFilters({ published: true }));
-  }, [dispatch, initialRecipes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -50,8 +51,8 @@ export function RecipesBrowseClient({ initialRecipes }: Props) {
         <div className="flex-1">
           {filteredRecipes.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg">No recipes match your filters.</p>
-              <p className="text-sm mt-1">Try adjusting or clearing your filters.</p>
+              <p className="text-lg">No recipes yet.</p>
+              <p className="text-sm mt-1">Go to Manage to create your first recipe.</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
