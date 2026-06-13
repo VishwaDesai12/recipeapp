@@ -64,7 +64,7 @@ export function RecipeDetailClient({ recipe }: Props) {
     setCurrentRating(newRating);
     setRatingCount(newCount);
 
-    // Save user's rating for this recipe
+    // Save user's rating choice
     try {
       const stored = localStorage.getItem(RATINGS_KEY);
       const map: Record<string, number> = stored ? JSON.parse(stored) : {};
@@ -72,7 +72,14 @@ export function RecipeDetailClient({ recipe }: Props) {
       localStorage.setItem(RATINGS_KEY, JSON.stringify(map));
     } catch { /* ignore */ }
 
-    // Persist updated recipe rating to manage_recipes localStorage + Redux
+    // Call POST /api/recipes/:id/rate
+    fetch(`/api/recipes/${recipe.id}/rate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating: star }),
+    }).catch(() => {/* ignore if API cold */});
+
+    // Persist updated rating to manage_recipes localStorage + Redux
     try {
       const stored = localStorage.getItem("manage_recipes");
       if (stored) {

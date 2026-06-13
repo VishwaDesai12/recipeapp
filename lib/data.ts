@@ -22,6 +22,13 @@ export function addRecipe(recipe: Recipe): Recipe {
   return recipe;
 }
 
+// Seeds an existing recipe (preserves id/slug). Skips if already present.
+export function seedRecipe(recipe: Recipe): void {
+  if (!recipes.find((r) => r.id === recipe.id)) {
+    recipes.push(recipe);
+  }
+}
+
 export function updateRecipe(id: string, updated: Recipe): Recipe | null {
   const index = recipes.findIndex((r) => r.id === id);
   if (index === -1) return null;

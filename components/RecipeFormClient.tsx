@@ -68,38 +68,48 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
     localStorage.setItem("manage_recipes", JSON.stringify(updated));
   };
 
-  const onSubmit = (formValues: typeof values) => {
+  const onSubmit = async (formValues: typeof values) => {
     setSubmitting(true);
-    const now = new Date().toISOString();
-
     const stored = localStorage.getItem("manage_recipes");
     const existing: Recipe[] = stored ? JSON.parse(stored) : [];
 
     if (mode === "create") {
-      const id = crypto.randomUUID();
-      const slug = derivedSlug || id;
-      const newRecipe: Recipe = {
-        ...formValues,
-        id,
-        slug,
-        rating: 0,
-        ratingCount: 0,
-        createdAt: now,
-        updatedAt: now,
-      };
+      // Call POST /api/recipes — API generates id, slug, timestamps
+      const res = await fetch("/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formValues),
+      });
+      const newRecipe: Recipe = res.ok
+        ? await res.json()
+        : { // fallback if API down
+            ...formValues,
+            id: crypto.randomUUID(),
+            slug: derivedSlug || crypto.randomUUID(),
+            rating: 0,
+            ratingCount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
       dispatch(addRecipe(newRecipe));
       saveToLocalStorage([newRecipe, ...existing]);
     } else if (initialRecipe) {
-      const newSlug =
-        formValues.title !== initialRecipe.title
-          ? (derivedSlug || initialRecipe.slug)
-          : initialRecipe.slug;
-      const updated: Recipe = {
-        ...initialRecipe,
-        ...formValues,
-        slug: newSlug,
-        updatedAt: now,
-      };
+      // Call PUT /api/recipes/:id
+      const res = await fetch(`/api/recipes/${initialRecipe.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formValues),
+      });
+      const updated: Recipe = res.ok
+        ? await res.json()
+        : { // fallback if API down
+            ...initialRecipe,
+            ...formValues,
+            slug: formValues.title !== initialRecipe.title
+              ? (derivedSlug || initialRecipe.slug)
+              : initialRecipe.slug,
+            updatedAt: new Date().toISOString(),
+          };
       dispatch(updateRecipe(updated));
       saveToLocalStorage(existing.map((r) => (r.id === updated.id ? updated : r)));
     }

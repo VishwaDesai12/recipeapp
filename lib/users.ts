@@ -28,6 +28,7 @@ export function findUserByEmail(email: string): User | undefined {
 
 export function addUser(name: string, email: string, password: string): User {
   const user: User = { id: randomUUID(), name, email, password };
+  
   users.push(user);
   return user;
 }

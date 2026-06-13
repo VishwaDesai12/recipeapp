@@ -46,26 +46,27 @@ export function ManageDashboardClient({ initialRecipes }: Props) {
     router.push(`/manage/${recipe.id}/edit`);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this recipe? This cannot be undone.")) return;
 
-    // Update Redux
+    // Call DELETE /api/recipes/:id
+    fetch(`/api/recipes/${id}`, { method: "DELETE" }).catch(() => {/* ignore if API cold */});
+
+    // Update Redux immediately
     dispatch(removeRecipe(id));
 
-    // Explicitly persist the updated list (handles empty array correctly)
+    // Persist updated list to localStorage
     const updated = recipes.filter((r) => r.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
-    // Remove from cookbook saved IDs so badge + cookbook stay accurate
+    // Remove from cookbook saved IDs
     try {
       const saved = localStorage.getItem("cookbook_saved_ids");
       if (saved) {
         const ids: string[] = JSON.parse(saved);
         localStorage.setItem("cookbook_saved_ids", JSON.stringify(ids.filter((sid) => sid !== id)));
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   if (recipes.length === 0) {
