@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { readFile } from "fs/promises";
-import { join } from "path";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
-async function getUsers(): Promise<User[]> {
-  try {
-    const data = await readFile(join(process.cwd(), "data/users.json"), "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
+import { findUserByEmail } from "@/lib/users";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
@@ -26,10 +9,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
   }
 
-  const users = await getUsers();
-  const user = users.find((u) => u.email === email && u.password === password);
+  const user = findUserByEmail(email);
 
-  if (!user) {
+  if (!user || user.password !== password) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
