@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { LayoutDashboard, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function ManageLayout({ children }: { children: React.ReactNode }) {
+export default async function ManageLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("chef_token");
+  if (!token?.value) {
+    redirect("/login");
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
       <aside className="w-full md:w-56 shrink-0">
