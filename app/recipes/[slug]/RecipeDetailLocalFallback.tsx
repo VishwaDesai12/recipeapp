@@ -1,8 +1,10 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Clock, Users, ChefHat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getRecipeBySlug } from "@/lib/data";
+import { Recipe } from "@/types/recipe";
 import { RecipeDetailClient } from "./RecipeDetailClient";
-import { RecipeDetailLocalFallback } from "./RecipeDetailLocalFallback";
 
 const DIFFICULTY_COLORS = {
   easy: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -10,30 +12,40 @@ const DIFFICULTY_COLORS = {
   hard: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
 };
 
-export default async function RecipeDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const recipe = getRecipeBySlug(slug);
+export function RecipeDetailLocalFallback({ slug }: { slug: string }) {
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  // Seeded recipe not found — may be a user-created recipe stored in localStorage.
-  // Render a client-side fallback that reads from localStorage by slug.
-  if (!recipe || !recipe.published) {
-    return <RecipeDetailLocalFallback slug={slug} />;
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const recipes: Recipe[] = JSON.parse(stored);
+        const found = recipes.find((r) => r.slug === slug);
+        setRecipe(found ?? null);
+      }
+    } catch {
+      // ignore
+    }
+    setChecked(true);
+  }, [slug]);
+
+  if (!checked) return null;
+
+  if (!recipe) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-32 text-center text-muted-foreground">
+        <p className="text-2xl font-semibold mb-2">Recipe not found</p>
+        <p className="text-sm">This recipe may have been deleted or doesn&apos;t exist.</p>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Cover image */}
       {recipe.coverImageUrl ? (
         <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden mb-8">
-          <img
-            src={recipe.coverImageUrl}
-            alt={recipe.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={recipe.coverImageUrl} alt={recipe.title} className="w-full h-full object-cover" />
         </div>
       ) : (
         <div className="w-full h-48 rounded-2xl bg-gradient-to-br from-orange-100 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 flex items-center justify-center mb-8">
@@ -41,7 +53,6 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      {/* Title + meta */}
       <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">{recipe.title}</h1>
         <p className="text-muted-foreground text-base mb-4">{recipe.description}</p>
@@ -68,15 +79,12 @@ export default async function RecipeDetailPage({
         {recipe.dietaryTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {recipe.dietaryTags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs capitalize">
-                {tag}
-              </Badge>
+              <Badge key={tag} variant="outline" className="text-xs capitalize">{tag}</Badge>
             ))}
           </div>
         )}
       </div>
 
-      {/* Interactive client island: serving adjuster, unit toggle, ingredients, nutrition, steps, rating */}
       <RecipeDetailClient recipe={recipe} />
     </div>
   );
