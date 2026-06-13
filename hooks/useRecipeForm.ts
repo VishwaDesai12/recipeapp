@@ -56,7 +56,7 @@ function buildInitial(initial?: Partial<Recipe>): FormValues {
     ingredients: initial?.ingredients ?? [blankIngredient()],
     steps: initial?.steps ?? [blankStep(1)],
     nutrition: initial?.nutrition,
-    published: initial?.published ?? false,
+    published: initial?.published ?? true,
   };
 }
 
