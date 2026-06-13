@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setRecipes, deleteRecipe, setSelectedRecipe } from "@/store/recipeSlice";
@@ -12,15 +13,21 @@ interface Props {
 
 export function ManageDashboardClient({ initialRecipes }: Props) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const recipes = useAppSelector((s) => s.recipes.recipes);
 
   useEffect(() => {
-    dispatch(setRecipes(initialRecipes));
-  }, [dispatch, initialRecipes]);
+    // Only seed from server when Redux is empty (fresh load / hard refresh).
+    // If Redux already has recipes the user created this session, keep them.
+    if (recipes.length === 0) {
+      dispatch(setRecipes(initialRecipes));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEdit = (recipe: Recipe) => {
     dispatch(setSelectedRecipe(recipe));
-    window.location.href = `/manage/${recipe.id}/edit`;
+    router.push(`/manage/${recipe.id}/edit`);
   };
 
   const handleDelete = async (id: string) => {

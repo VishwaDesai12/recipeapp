@@ -72,7 +72,7 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
       } else if (initialRecipe) {
         await dispatch(editRecipe({ id: initialRecipe.id, data: formValues }));
       }
-      window.location.href = "/manage";
+      router.push("/manage");
     } finally {
       setSubmitting(false);
     }
