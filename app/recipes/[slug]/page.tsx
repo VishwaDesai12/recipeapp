@@ -1,16 +1,8 @@
 import { notFound } from "next/navigation";
 import { Clock, Users, ChefHat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Recipe } from "@/types/recipe";
+import { getRecipeBySlug } from "@/lib/data";
 import { RecipeDetailClient } from "./RecipeDetailClient";
-
-async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/recipes?slug=${slug}`, { cache: "no-store" });
-  if (!res.ok || res.status === 404) return null;
-  const data: Recipe | null = await res.json();
-  return data;
-}
 
 const DIFFICULTY_COLORS = {
   easy: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -24,7 +16,7 @@ export default async function RecipeDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const recipe = await getRecipeBySlug(slug);
+  const recipe = getRecipeBySlug(slug);
 
   if (!recipe || !recipe.published) {
     notFound();
