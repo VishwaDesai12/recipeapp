@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Users, ChefHat } from "lucide-react";
+import { Clock, Users, ChefHat, UserCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Recipe } from "@/types/recipe";
 import { RecipeDetailClient } from "./RecipeDetailClient";
@@ -21,7 +21,7 @@ export function RecipeDetailLocalFallback({ slug }: { slug: string }) {
       const stored = localStorage.getItem("manage_recipes");
       if (stored) {
         const recipes: Recipe[] = JSON.parse(stored);
-        const found = recipes.find((r) => r.slug === slug);
+        const found = recipes.find((r) => r.slug === slug && r.published);
         setRecipe(found ?? null);
       }
     } catch {
@@ -69,6 +69,10 @@ export function RecipeDetailLocalFallback({ slug }: { slug: string }) {
           <div className="flex items-center gap-1.5 text-sm">
             <Users className="w-4 h-4 text-muted-foreground" />
             <span>{recipe.servings} servings</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm">
+            <UserCircle className="w-4 h-4 text-muted-foreground" />
+            <span>{recipe.authorId}</span>
           </div>
           <Badge variant="secondary">{recipe.category}</Badge>
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${DIFFICULTY_COLORS[recipe.difficulty]}`}>

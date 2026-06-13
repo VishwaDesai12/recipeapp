@@ -1,4 +1,4 @@
-import { Clock, Users, ChefHat } from "lucide-react";
+import { Clock, Users, ChefHat, UserCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getRecipeBySlug } from "@/lib/data";
 import { RecipeDetailClient } from "./RecipeDetailClient";
@@ -58,6 +58,10 @@ export default async function RecipeDetailPage({
           <div className="flex items-center gap-1.5 text-sm">
             <Users className="w-4 h-4 text-muted-foreground" />
             <span>{recipe.servings} servings</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm">
+            <UserCircle className="w-4 h-4 text-muted-foreground" />
+            <span>{recipe.authorId}</span>
           </div>
           <Badge variant="secondary">{recipe.category}</Badge>
           <span className={`text-xs font-medium px-2 py-1 rounded-full ${DIFFICULTY_COLORS[recipe.difficulty]}`}>

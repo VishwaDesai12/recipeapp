@@ -9,7 +9,7 @@ export function ManageAuthGuard({ children }: { children: React.ReactNode }) {
     if (localStorage.getItem("chef_logged_in") === "true") {
       setChecked(true);
     } else {
-      window.location.href = "/login";
+      window.location.href = "/?error=login_required";
     }
   }, []);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ChevronUp, ChevronDown, Trash2, Timer } from "lucide-react";
+import { ChevronUp, ChevronDown, Trash2, Timer, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -106,23 +106,42 @@ export function StepCard({
   activeTimerStep,
   onStartTimer,
 }: StepCardProps) {
+  const [tipOpen, setTipOpen] = useState(false);
+
   if (!editable) {
     return (
       <div className={cn("py-3 border-b last:border-0", className)}>
-        <p className="text-sm">
-          <span className="font-semibold">Step {step.stepNumber}:</span>{" "}
-          {step.instruction}
-        </p>
-        {step.tip && (
-          <p className="text-xs text-muted-foreground mt-1">Tip: {step.tip}</p>
-        )}
-        {step.durationMinutes && (
-          <CountdownTimer
-            durationMinutes={step.durationMinutes}
-            isActive={activeTimerStep === index}
-            onStart={() => onStartTimer?.(index)}
-          />
-        )}
+        <div className="flex items-start gap-3">
+          {/* Step number circle */}
+          <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-xs font-bold text-primary shrink-0 mt-0.5">
+            {step.stepNumber}
+          </div>
+          <div className="flex-1 space-y-1">
+            <p className="text-sm">{step.instruction}</p>
+            {step.tip && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setTipOpen((v) => !v)}
+                  className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline"
+                >
+                  <ChevronRight className={cn("w-3 h-3 transition-transform", tipOpen && "rotate-90")} />
+                  Tip
+                </button>
+                {tipOpen && (
+                  <p className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-amber-300">{step.tip}</p>
+                )}
+              </div>
+            )}
+            {step.durationMinutes && (
+              <CountdownTimer
+                durationMinutes={step.durationMinutes}
+                isActive={activeTimerStep === index}
+                onStart={() => onStartTimer?.(index)}
+              />
+            )}
+          </div>
+        </div>
       </div>
     );
   }

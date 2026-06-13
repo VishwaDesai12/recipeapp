@@ -11,7 +11,11 @@ import { Recipe } from "@/types/recipe";
 // Old seeded recipe IDs — strip them out when migrating existing localStorage data
 const SEEDED_IDS = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 
-export function RecipesBrowseClient() {
+interface Props {
+  initialRecipes?: Recipe[];
+}
+
+export function RecipesBrowseClient({ initialRecipes = [] }: Props) {
   const dispatch = useAppDispatch();
   const { filteredRecipes, count } = useFilteredRecipes();
 
@@ -21,16 +25,23 @@ export function RecipesBrowseClient() {
       if (stored) {
         const parsed: Recipe[] = JSON.parse(stored);
         const userOnly = parsed.filter((r) => !SEEDED_IDS.has(r.id));
-        // If migration removed seeded recipes, persist the cleaned list back
         if (userOnly.length !== parsed.length) {
           localStorage.setItem("manage_recipes", JSON.stringify(userOnly));
         }
-        dispatch(setRecipes(userOnly));
+        // Merge: server-fetched initialRecipes + localStorage (localStorage wins for same ID)
+        const localIds = new Set(userOnly.map((r) => r.id));
+        const merged = [
+          ...userOnly,
+          ...initialRecipes.filter((r) => !localIds.has(r.id)),
+        ];
+        dispatch(setRecipes(merged));
+      } else if (initialRecipes.length > 0) {
+        dispatch(setRecipes(initialRecipes));
       } else {
         dispatch(setRecipes([]));
       }
     } catch {
-      dispatch(setRecipes([]));
+      dispatch(setRecipes(initialRecipes.length > 0 ? initialRecipes : []));
     }
     dispatch(setFilters({ published: true }));
   // eslint-disable-next-line react-hooks/exhaustive-deps

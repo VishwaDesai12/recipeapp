@@ -15,10 +15,9 @@ export function useRecipeScaler(recipe: Recipe, multiplier: number): ScalerResul
     () =>
       recipe.ingredients.map((ing) => ({
         ...ing,
-        quantity: Math.round(ing.quantity * multiplier * 100) / 100,
+        quantity: scaleIngredient(ing.quantity),
       })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recipe.ingredients, multiplier]
+    [recipe.ingredients, scaleIngredient]
   );
 
   const scaledServings = recipe.servings * multiplier;

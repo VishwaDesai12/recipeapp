@@ -11,6 +11,7 @@ import { useCooking } from "@/context/CookingContext";
 import { useAppDispatch } from "@/store";
 import { updateRecipe } from "@/store/recipeSlice";
 import { Recipe } from "@/types/recipe";
+import { cn } from "@/lib/utils";
 
 interface Props {
   recipe: Recipe;
@@ -18,7 +19,7 @@ interface Props {
 
 export function RecipeDetailClient({ recipe }: Props) {
   const dispatch = useAppDispatch();
-  const { servingMultiplier, setServingMultiplier } = useCooking();
+  const { servingMultiplier, setServingMultiplier, unitSystem, setUnitSystem } = useCooking();
   const [activeTimerStep, setActiveTimerStep] = useState<number | null>(null);
   const RATINGS_KEY = "recipe_user_ratings";
 
@@ -102,10 +103,10 @@ export function RecipeDetailClient({ recipe }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Servings adjuster */}
-      <div className="flex items-center gap-3 p-4 rounded-xl border bg-muted/30">
-        <span className="text-sm font-medium">Servings:</span>
+      {/* Servings adjuster + unit system toggle */}
+      <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl border bg-muted/30">
         <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Servings:</span>
           <Button
             size="icon"
             variant="outline"
@@ -115,7 +116,7 @@ export function RecipeDetailClient({ recipe }: Props) {
           >
             <Minus className="w-4 h-4" />
           </Button>
-          <span className="w-16 text-center font-semibold">
+          <span className="w-12 text-center font-semibold">
             {Math.round(recipe.servings * servingMultiplier)}
           </span>
           <Button
@@ -126,6 +127,37 @@ export function RecipeDetailClient({ recipe }: Props) {
           >
             <Plus className="w-4 h-4" />
           </Button>
+        </div>
+
+        {/* Unit system toggle */}
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm font-medium">Units:</span>
+          <div className="flex rounded-lg border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setUnitSystem("metric")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium transition-colors",
+                unitSystem === "metric"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Metric
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnitSystem("imperial")}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium transition-colors",
+                unitSystem === "imperial"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Imperial
+            </button>
+          </div>
         </div>
       </div>
 

@@ -38,11 +38,11 @@ export function IngredientRow({
   canRemove = true,
   className,
 }: IngredientRowProps) {
-  const { scaleIngredient } = useCooking();
+  const { scaleIngredient, convertUnit } = useCooking();
 
   if (!editable) {
     const displayQty = scaled ? scaleIngredient(ingredient.quantity) : ingredient.quantity;
-    const displayStr = `${displayQty} ${ingredient.unit}`;
+    const displayStr = convertUnit(displayQty, ingredient.unit);
 
     return (
       <div className={cn("flex items-center gap-3 py-2 border-b last:border-0", className)}>
