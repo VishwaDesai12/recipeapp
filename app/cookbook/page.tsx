@@ -14,16 +14,20 @@ export default function CookbookPage() {
   const allRecipes = useAppSelector((s) => s.recipes.recipes);
 
   useEffect(() => {
-    // Hydrate saved IDs from localStorage
-    const stored = localStorage.getItem("cookbook_saved_ids");
-    if (stored) {
-      try {
-        const ids = JSON.parse(stored) as string[];
-        dispatch(setSavedIds(ids));
-      } catch {
-        // ignore malformed data
+    // Only restore from localStorage when Redux is empty (fresh session/reload).
+    // If Redux already has IDs the user saved this session, don't overwrite them.
+    if (savedIds.length === 0) {
+      const stored = localStorage.getItem("cookbook_saved_ids");
+      if (stored) {
+        try {
+          const ids = JSON.parse(stored) as string[];
+          if (ids.length > 0) dispatch(setSavedIds(ids));
+        } catch {
+          // ignore malformed data
+        }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   useEffect(() => {

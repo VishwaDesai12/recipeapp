@@ -36,11 +36,15 @@ export function RecipeCard({ recipe, variant, onEdit, onDelete, className }: Rec
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const newIds = isSaved
+      ? savedIds.filter((id) => id !== recipe.id)
+      : [...savedIds, recipe.id];
     if (isSaved) {
       dispatch(unsaveRecipe(recipe.id));
     } else {
       dispatch(saveRecipe(recipe.id));
     }
+    localStorage.setItem("cookbook_saved_ids", JSON.stringify(newIds));
   };
 
   return (

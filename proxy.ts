@@ -9,8 +9,7 @@ export function proxy(request: NextRequest) {
   console.log(`[Proxy] ${timestamp} — ${path}`);
 
   if (!token?.value) {
-    const redirectUrl = new URL("/", request.url);
-    redirectUrl.searchParams.set("error", "login_required");
+    const redirectUrl = new URL("/login", request.url);
     return NextResponse.redirect(redirectUrl);
   }
 

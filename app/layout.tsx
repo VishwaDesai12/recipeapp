@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReduxProvider } from "@/components/ReduxProvider";
 import { CookingProvider } from "@/context/CookingContext";
 import { Navbar } from "@/components/Navbar";
+import { NavAuthButton } from "@/components/NavAuthButton";
 
 const dmSans = DM_Sans({ variable: "--font-sans", subsets: ["latin"] });
 const playfairDisplay = Playfair_Display({ variable: "--font-heading", subsets: ["latin"] });
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ReduxProvider>
           <CookingProvider>
-            <Navbar />
+            <Navbar authButton={<NavAuthButton />} />
             <main className="flex-1">{children}</main>
           </CookingProvider>
         </ReduxProvider>
