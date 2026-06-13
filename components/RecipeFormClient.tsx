@@ -64,14 +64,21 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
     .trim()
     .replace(/\s+/g, "-");
 
+  const saveToLocalStorage = (updated: Recipe[]) => {
+    localStorage.setItem("manage_recipes", JSON.stringify(updated));
+  };
+
   const onSubmit = (formValues: typeof values) => {
     setSubmitting(true);
     const now = new Date().toISOString();
 
+    const stored = localStorage.getItem("manage_recipes");
+    const existing: Recipe[] = stored ? JSON.parse(stored) : [];
+
     if (mode === "create") {
       const id = crypto.randomUUID();
       const slug = derivedSlug || id;
-      dispatch(addRecipe({
+      const newRecipe: Recipe = {
         ...formValues,
         id,
         slug,
@@ -79,18 +86,22 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
         ratingCount: 0,
         createdAt: now,
         updatedAt: now,
-      }));
+      };
+      dispatch(addRecipe(newRecipe));
+      saveToLocalStorage([newRecipe, ...existing]);
     } else if (initialRecipe) {
       const newSlug =
         formValues.title !== initialRecipe.title
           ? (derivedSlug || initialRecipe.slug)
           : initialRecipe.slug;
-      dispatch(updateRecipe({
+      const updated: Recipe = {
         ...initialRecipe,
         ...formValues,
         slug: newSlug,
         updatedAt: now,
-      }));
+      };
+      dispatch(updateRecipe(updated));
+      saveToLocalStorage(existing.map((r) => (r.id === updated.id ? updated : r)));
     }
 
     router.push("/manage");
