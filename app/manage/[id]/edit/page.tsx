@@ -18,14 +18,20 @@ export default function EditRecipePage() {
       setRecipe(selectedRecipe);
       return;
     }
-    // Fallback: fetch from API if navigated directly
-    fetch(`/api/recipes/${id}`)
-      .then((r) => r.json())
-      .then((data: Recipe) => {
-        setRecipe(data);
-        dispatch(setSelectedRecipe(data));
-      })
-      .catch(() => null);
+    // Fallback: look up from localStorage (works for user-created recipes)
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const recipes: Recipe[] = JSON.parse(stored);
+        const found = recipes.find((r) => r.id === id);
+        if (found) {
+          setRecipe(found);
+          dispatch(setSelectedRecipe(found));
+        }
+      }
+    } catch {
+      // ignore
+    }
   }, [id, selectedRecipe, dispatch]);
 
   if (!recipe) {
