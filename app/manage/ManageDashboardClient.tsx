@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setRecipes, deleteRecipe, setSelectedRecipe } from "@/store/recipeSlice";
@@ -13,7 +12,6 @@ interface Props {
 
 export function ManageDashboardClient({ initialRecipes }: Props) {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const recipes = useAppSelector((s) => s.recipes.recipes);
 
   useEffect(() => {
@@ -22,7 +20,7 @@ export function ManageDashboardClient({ initialRecipes }: Props) {
 
   const handleEdit = (recipe: Recipe) => {
     dispatch(setSelectedRecipe(recipe));
-    router.push(`/manage/${recipe.id}/edit`);
+    window.location.href = `/manage/${recipe.id}/edit`;
   };
 
   const handleDelete = async (id: string) => {
