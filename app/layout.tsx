@@ -10,8 +10,8 @@ const dmSans = DM_Sans({ variable: "--font-sans", subsets: ["latin"] });
 const playfairDisplay = Playfair_Display({ variable: "--font-heading", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RecipeApp — Browse, Create & Manage Recipes",
-  description: "A recipe management app with ingredient scaling, dietary filters, and a personal cookbook.",
+  title: "Yumms — Browse, Create & Manage Recipes",
+  description: "Yumms: your personal recipe collection with ingredient scaling, dietary filters, and a cookbook.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

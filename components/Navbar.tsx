@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChefHat, Moon, Search, Sun } from "lucide-react";
+import { Flame, Moon, Search, Sun } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from "@/store";
@@ -24,8 +24,8 @@ export function Navbar({ authButton }: { authButton?: React.ReactNode }) {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary shrink-0">
-          <ChefHat className="w-6 h-6" />
-          RecipeApp
+          <Flame className="w-6 h-6" />
+          Yumms
         </Link>
 
         <nav className="flex items-center gap-1 flex-1">
