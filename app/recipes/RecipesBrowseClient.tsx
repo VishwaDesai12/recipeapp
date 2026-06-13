@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/store";
-import { setRecipes, setFilters } from "@/store/recipeSlice";
+import { mergeRecipes, setFilters } from "@/store/recipeSlice";
 import { RecipeCard } from "@/components/RecipeCard";
 import { RecipeFiltersBar } from "@/components/RecipeFiltersBar";
 import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
@@ -17,7 +17,7 @@ export function RecipesBrowseClient({ initialRecipes }: Props) {
   const { filteredRecipes, count } = useFilteredRecipes();
 
   useEffect(() => {
-    dispatch(setRecipes(initialRecipes));
+    dispatch(mergeRecipes(initialRecipes));
     // Only show published on this page
     dispatch(setFilters({ published: true }));
   }, [dispatch, initialRecipes]);

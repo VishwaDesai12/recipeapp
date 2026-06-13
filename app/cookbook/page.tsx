@@ -6,7 +6,7 @@ import { LinkButton } from "@/components/LinkButton";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { setSavedIds } from "@/store/cookbookSlice";
-import { setRecipes } from "@/store/recipeSlice";
+import { mergeRecipes } from "@/store/recipeSlice";
 
 export default function CookbookPage() {
   const dispatch = useAppDispatch();
@@ -35,7 +35,7 @@ export default function CookbookPage() {
     if (allRecipes.length === 0) {
       fetch("/api/recipes?published=true")
         .then((r) => r.json())
-        .then((data) => dispatch(setRecipes(data)))
+        .then((data) => dispatch(mergeRecipes(data)))
         .catch(() => null);
     }
   }, [dispatch, allRecipes.length]);

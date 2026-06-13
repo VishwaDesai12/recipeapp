@@ -92,6 +92,20 @@ const recipeSlice = createSlice({
     setRecipes(state, action: PayloadAction<Recipe[]>) {
       state.recipes = action.payload;
     },
+    // Merges server recipes into Redux without removing user-created ones.
+    // Existing recipes get updated (ratings etc), new server recipes are added,
+    // recipes only in Redux (user-created this session) are kept.
+    mergeRecipes(state, action: PayloadAction<Recipe[]>) {
+      const serverMap = new Map(action.payload.map((r) => [r.id, r]));
+      const merged = state.recipes.map((r) =>
+        serverMap.has(r.id) ? serverMap.get(r.id)! : r
+      );
+      const existingIds = new Set(merged.map((r) => r.id));
+      action.payload.forEach((r) => {
+        if (!existingIds.has(r.id)) merged.push(r);
+      });
+      state.recipes = merged;
+    },
     addRecipe(state, action: PayloadAction<Recipe>) {
       state.recipes.unshift(action.payload);
     },
@@ -156,6 +170,7 @@ const recipeSlice = createSlice({
 
 export const {
   setRecipes,
+  mergeRecipes,
   addRecipe,
   updateRecipe,
   removeRecipe,
