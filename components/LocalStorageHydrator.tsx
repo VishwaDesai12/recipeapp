@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAppDispatch } from "@/store";
 import { setSavedIds } from "@/store/cookbookSlice";
 import { Recipe } from "@/types/recipe";
+import { isLoggedInClient } from "@/lib/authClient";
 
 const SEEDED_IDS = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 
@@ -12,7 +13,7 @@ export function LocalStorageHydrator() {
 
   useEffect(() => {
     // Only restore cookbook saves when the user is logged in
-    const isLoggedIn = localStorage.getItem("chef_logged_in") === "true";
+    const isLoggedIn = isLoggedInClient();
     if (isLoggedIn) {
       try {
         const stored = localStorage.getItem("cookbook_saved_ids");

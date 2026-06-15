@@ -9,5 +9,12 @@ export async function GET(req: NextRequest) {
     sameSite: "lax",
     secure: true,
   });
+  response.cookies.set("chef_session", "", {
+    path: "/",
+    maxAge: 0,
+    httpOnly: false,
+    sameSite: "lax",
+    secure: true,
+  });
   return response;
 }

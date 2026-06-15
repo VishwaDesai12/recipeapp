@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { setSavedIds } from "@/store/cookbookSlice";
 import { setRecipes } from "@/store/recipeSlice";
 import { Recipe } from "@/types/recipe";
+import { isLoggedInClient } from "@/lib/authClient";
 
 const SEEDED_IDS = new Set(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 
@@ -35,8 +36,7 @@ export default function CookbookPage() {
 
   // Restore saved IDs from localStorage — only when logged in
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("chef_logged_in") === "true";
-    if (!isLoggedIn || savedIds.length > 0) return;
+    if (!isLoggedInClient() || savedIds.length > 0) return;
     try {
       const stored = localStorage.getItem("cookbook_saved_ids");
       if (stored) {

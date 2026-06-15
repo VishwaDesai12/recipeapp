@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { saveRecipe, unsaveRecipe } from "@/store/cookbookSlice";
 import { Recipe } from "@/types/recipe";
 import { cn } from "@/lib/utils";
+import { isLoggedInClient } from "@/lib/authClient";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -36,7 +37,7 @@ export function RecipeCard({ recipe, variant, onEdit, onDelete, className }: Rec
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (localStorage.getItem("chef_logged_in") !== "true") {
+    if (!isLoggedInClient()) {
       window.location.href = "/login";
       return;
     }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isLoggedInClient } from "@/lib/authClient";
 
 export function ManageAuthGuard({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("chef_logged_in") === "true") {
+    if (isLoggedInClient()) {
       setChecked(true);
     } else {
       window.location.href = "/?error=login_required";

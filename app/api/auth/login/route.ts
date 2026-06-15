@@ -22,5 +22,13 @@ export async function POST(req: NextRequest) {
     sameSite: "lax",
     secure: true,
   });
+  // Non-httpOnly flag cookie so client-side JS can detect login state
+  response.cookies.set("chef_session", "1", {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: false,
+    sameSite: "lax",
+    secure: true,
+  });
   return response;
 }
