@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, LogIn } from "lucide-react";
 import { LinkButton } from "@/components/LinkButton";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAppDispatch, useAppSelector } from "@/store";
@@ -16,38 +16,84 @@ export default function CookbookPage() {
   const savedIds = useAppSelector((s) => s.cookbook.savedIds);
   const allRecipes = useAppSelector((s) => s.recipes.recipes);
 
-  // Load recipes from localStorage (user-created only)
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Auth check is the first thing — nothing meaningful renders until this resolves
   useEffect(() => {
-    if (allRecipes.length === 0) {
-      try {
-        const stored = localStorage.getItem("manage_recipes");
-        if (stored) {
-          const parsed: Recipe[] = JSON.parse(stored);
-          const userOnly = parsed.filter((r) => !SEEDED_IDS.has(r.id));
-          dispatch(setRecipes(userOnly));
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then(({ loggedIn }: { loggedIn: boolean }) => {
+        setIsLoggedIn(loggedIn);
+        if (!loggedIn) {
+          dispatch(setSavedIds([]));
+          localStorage.removeItem("cookbook_saved_ids");
+        } else {
+          try {
+            const stored = localStorage.getItem("cookbook_saved_ids");
+            if (stored) {
+              const ids: string[] = JSON.parse(stored);
+              const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
+              if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
+            }
+          } catch { /* ignore */ }
         }
-      } catch {
-        // ignore
-      }
-    }
+      })
+      .catch(() => {
+        dispatch(setSavedIds([]));
+      })
+      .finally(() => setAuthChecked(true));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Load user-created recipes from localStorage (only when confirmed logged in)
+  useEffect(() => {
+    if (!isLoggedIn || allRecipes.length > 0) return;
+    try {
+      const stored = localStorage.getItem("manage_recipes");
+      if (stored) {
+        const parsed: Recipe[] = JSON.parse(stored);
+        const userOnly = parsed.filter((r) => !SEEDED_IDS.has(r.id));
+        dispatch(setRecipes(userOnly));
+      }
+    } catch { /* ignore */ }
+  }, [isLoggedIn, allRecipes.length, dispatch]);
 
   // Prune stale saved IDs once recipes are loaded
   useEffect(() => {
-    if (allRecipes.length === 0 || savedIds.length === 0) return;
+    if (!isLoggedIn || allRecipes.length === 0 || savedIds.length === 0) return;
     const validIds = savedIds.filter((id) => allRecipes.some((r) => r.id === id));
     if (validIds.length !== savedIds.length) {
       dispatch(setSavedIds(validIds));
       localStorage.setItem("cookbook_saved_ids", JSON.stringify(validIds));
     }
-  }, [allRecipes, savedIds, dispatch]);
+  }, [isLoggedIn, allRecipes, savedIds, dispatch]);
 
-  // Persist savedIds to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("cookbook_saved_ids", JSON.stringify(savedIds));
-  }, [savedIds]);
+  // Show spinner while auth check is in flight
+  if (!authChecked) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Not logged in — hard gate, show login prompt only
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center space-y-5">
+        <BookOpen className="w-16 h-16 mx-auto text-muted-foreground/40" />
+        <h1 className="text-2xl font-bold">Your Cookbook</h1>
+        <p className="text-muted-foreground max-w-sm mx-auto">
+          Log in to save recipes and build your personal cookbook.
+        </p>
+        <LinkButton href="/login" className="inline-flex items-center gap-2">
+          <LogIn className="w-4 h-4" />
+          Log in to view your cookbook
+        </LinkButton>
+      </div>
+    );
+  }
 
   const savedRecipes = allRecipes.filter((r) => savedIds.includes(r.id));
 
