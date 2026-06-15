@@ -357,29 +357,16 @@ export function RecipeFormClient({ mode, initialRecipe }: Props) {
       {/* Submit */}
       <div className="flex gap-3">
         {mode === "edit" && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={submitting}
-              onClick={() => {
-                handleChange("published", false);
-                handleSubmit(onSubmit);
-              }}
-            >
-              Save as Draft
-            </Button>
-            <Button
-              type="button"
-              disabled={submitting}
-              onClick={() => {
-                handleChange("published", true);
-                handleSubmit(onSubmit);
-              }}
-            >
-              Publish
-            </Button>
-          </>
+          <Button
+            type="button"
+            disabled={submitting}
+            onClick={() => {
+              handleChange("published", true);
+              handleSubmit(onSubmit);
+            }}
+          >
+            {submitting ? "Saving..." : "Save Changes"}
+          </Button>
         )}
         {mode === "create" && (
           <Button type="submit" disabled={submitting} className="px-8">
