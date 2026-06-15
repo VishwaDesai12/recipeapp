@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const response = NextResponse.redirect(new URL("/", req.url));
+export async function GET() {
+  const response = NextResponse.json({ success: true });
   response.cookies.set("chef_token", "", {
     path: "/",
     maxAge: 0,

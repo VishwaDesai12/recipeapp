@@ -1,18 +1,30 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Flame, Moon, Search, Sun } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAppSelector } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { setSavedIds } from "@/store/cookbookSlice";
 import { useCooking } from "@/context/CookingContext";
+import { isLoggedInClient } from "@/lib/authClient";
 import { cn } from "@/lib/utils";
 
 export function Navbar({ authButton }: { authButton?: React.ReactNode }) {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
   const savedCount = useAppSelector((s) => s.cookbook.savedIds.length);
   const { theme, toggleTheme } = useCooking();
+
+  // On every navigation, if the session cookie is gone but Redux still has saves, wipe them
+  useEffect(() => {
+    if (savedCount > 0 && !isLoggedInClient()) {
+      dispatch(setSavedIds([]));
+      localStorage.removeItem("cookbook_saved_ids");
+    }
+  }, [pathname, savedCount, dispatch]);
 
   const links = [
     { href: "/recipes", label: "Browse", icon: <Search className="w-3.5 h-3.5" /> },
