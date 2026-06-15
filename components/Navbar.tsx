@@ -54,7 +54,7 @@ export function Navbar({ authButton }: { authButton?: React.ReactNode }) {
             >
               {link.icon}
               {link.label}
-              {link.href === "/cookbook" && savedCount > 0 && (
+              {link.href === "/cookbook" && savedCount > 0 && isLoggedInClient() && (
                 <Badge className="absolute -top-2 -right-2 h-4 min-w-4 px-1 text-[10px]">
                   {savedCount}
                 </Badge>

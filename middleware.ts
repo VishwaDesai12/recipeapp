@@ -10,8 +10,8 @@ export function middleware(req: NextRequest) {
 
   if (!token?.value) {
     const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.searchParams.set("error", "login_required");
+    url.pathname = "/login";
+    url.searchParams.delete("error");
     return NextResponse.redirect(url);
   }
 
@@ -19,5 +19,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/manage", "/manage/:path*"],
+  matcher: ["/manage", "/manage/:path*", "/cookbook"],
 };
