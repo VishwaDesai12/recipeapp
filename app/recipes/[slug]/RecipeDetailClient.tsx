@@ -38,8 +38,11 @@ export function RecipeDetailClient({ recipe }: Props) {
     if (typeof window === "undefined") return null;
     return getSavedUserRating();
   });
-  const [currentRating, setCurrentRating] = useState(recipe.rating);
-  const [ratingCount, setRatingCount] = useState(recipe.ratingCount);
+  // If the user has no saved rating, treat the stored count as 0 to prevent
+  // stale accumulated counts from old sessions showing inflated numbers.
+  const hasExistingRating = typeof window !== "undefined" && getSavedUserRating() !== null;
+  const [currentRating, setCurrentRating] = useState(hasExistingRating ? recipe.rating : 0);
+  const [ratingCount, setRatingCount] = useState(hasExistingRating ? recipe.ratingCount : 0);
 
   const handleStartTimer = (index: number) => {
     setActiveTimerStep(index);
@@ -49,16 +52,19 @@ export function RecipeDetailClient({ recipe }: Props) {
     const prevUserRating = getSavedUserRating();
     const alreadyRated = prevUserRating !== null;
 
-    // If user already rated: replace their old vote (count stays same)
-    // If new rating: add to running average (count +1)
     let newRating: number;
     let newCount: number;
-    if (alreadyRated) {
+    if (alreadyRated && ratingCount >= 1) {
+      // Replace old vote — count stays the same, adjust the average
       newCount = ratingCount;
-      newRating = Math.round(((currentRating * ratingCount - prevUserRating! + star) / ratingCount) * 10) / 10;
+      newRating = ratingCount === 1
+        ? star
+        : Math.round(((currentRating * ratingCount - prevUserRating! + star) / ratingCount) * 10) / 10;
     } else {
-      newCount = ratingCount + 1;
-      newRating = Math.round(((currentRating * ratingCount + star) / newCount) * 10) / 10;
+      // First rating from this user. Reset count to 1 to prevent stale
+      // accumulated counts from old sessions bleeding in.
+      newCount = 1;
+      newRating = star;
     }
 
     setUserRating(star);
