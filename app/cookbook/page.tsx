@@ -33,20 +33,19 @@ export default function CookbookPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Restore saved IDs from localStorage
+  // Restore saved IDs from localStorage — only when logged in
   useEffect(() => {
-    if (savedIds.length === 0) {
-      try {
-        const stored = localStorage.getItem("cookbook_saved_ids");
-        if (stored) {
-          const ids = JSON.parse(stored) as string[];
-          // Strip saved IDs for old seeded recipes
-          const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
-          if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
-        }
-      } catch {
-        // ignore
+    const isLoggedIn = localStorage.getItem("chef_logged_in") === "true";
+    if (!isLoggedIn || savedIds.length > 0) return;
+    try {
+      const stored = localStorage.getItem("cookbook_saved_ids");
+      if (stored) {
+        const ids = JSON.parse(stored) as string[];
+        const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
+        if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
       }
+    } catch {
+      // ignore
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

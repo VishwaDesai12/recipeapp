@@ -36,6 +36,10 @@ export function RecipeCard({ recipe, variant, onEdit, onDelete, className }: Rec
   const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (localStorage.getItem("chef_logged_in") !== "true") {
+      window.location.href = "/login";
+      return;
+    }
     const newIds = isSaved
       ? savedIds.filter((id) => id !== recipe.id)
       : [...savedIds, recipe.id];

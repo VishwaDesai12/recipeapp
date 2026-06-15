@@ -11,15 +11,18 @@ export function LocalStorageHydrator() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Restore cookbook saved IDs into Redux
-    try {
-      const stored = localStorage.getItem("cookbook_saved_ids");
-      if (stored) {
-        const ids: string[] = JSON.parse(stored);
-        const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
-        if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
-      }
-    } catch { /* ignore */ }
+    // Only restore cookbook saves when the user is logged in
+    const isLoggedIn = localStorage.getItem("chef_logged_in") === "true";
+    if (isLoggedIn) {
+      try {
+        const stored = localStorage.getItem("cookbook_saved_ids");
+        if (stored) {
+          const ids: string[] = JSON.parse(stored);
+          const userOnly = ids.filter((id) => !SEEDED_IDS.has(id));
+          if (userOnly.length > 0) dispatch(setSavedIds(userOnly));
+        }
+      } catch { /* ignore */ }
+    }
 
     // Re-seed the API in-memory store from localStorage so all API routes
     // work correctly even after a Vercel cold start.
