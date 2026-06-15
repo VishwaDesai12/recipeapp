@@ -18,11 +18,11 @@ export function Navbar({ authButton }: { authButton?: React.ReactNode }) {
   const savedCount = useAppSelector((s) => s.cookbook.savedIds.length);
   const { theme, toggleTheme } = useCooking();
 
-  // On every navigation, if the session cookie is gone but Redux still has saves, wipe them
+  // On every navigation, if the session cookie is gone but Redux still has saves, wipe Redux only
+  // (keep localStorage intact so saves are restored when the user logs back in)
   useEffect(() => {
     if (savedCount > 0 && !isLoggedInClient()) {
       dispatch(setSavedIds([]));
-      localStorage.removeItem("cookbook_saved_ids");
     }
   }, [pathname, savedCount, dispatch]);
 

@@ -6,9 +6,7 @@ import { cn } from "@/lib/utils";
 
 export function LogoutButton() {
   const handleLogout = async () => {
-    // Clear all local auth + cookbook data before the cookie is cleared
     localStorage.removeItem("chef_logged_in");
-    localStorage.removeItem("cookbook_saved_ids");
     await fetch("/api/auth/logout");
     window.location.href = "/";
   };
